@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Science Mastery Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+        }
+
+        .game-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 800px;
+            width: 90%;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .title {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #ff6b6b, #feca57);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 15px;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #feca57;
+        }
+
+        .question-card {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 20px;
+            min-height: 300px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .question {
+            font-size: 1.2rem;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .options {
+            display: grid;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .option {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid transparent;
+            border-radius: 10px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+
+        .option:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .option.selected {
+            border-color: #feca57;
+            background: rgba(254, 202, 87, 0.2);
+        }
+
+        .option.correct {
+            border-color: #2ed573;
+            background: rgba(46, 213, 115, 0.2);
+        }
+
+        .option.incorrect {
+            border-color: #ff4757;
+            background: rgba(255, 71, 87, 0.2);
+        }
+
+        .buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #ff6b6b, #feca57);
+            border: none;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .feedback {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 10px;
+            font-weight: bold;
+        }
+
+        .feedback.correct {
+            background: rgba(46, 213, 115, 0.2);
+            border: 1px solid #2ed573;
+        }
+
+        .feedback.incorrect {
+            background: rgba(255, 71, 87, 0.2);
+            border: 1px solid #ff4757;
+        }
+
+        .game-over {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .final-score {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #feca57;
+            margin: 20px 0;
+        }
+
+        .performance {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+        }
+
+        .celebration {
+            font-size: 2rem;
+            margin-bottom: 20px;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .pulse {
+            animation: pulse 0.5s ease-in-out;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="header">
+            <h1 class="title">🧠 Data Science Mastery</h1>
+            <p>Test your knowledge and ace that interview!</p>
+        </div>
+
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-number" id="score">0</div>
+                <div>Score</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number" id="question-num">1</div>
+                <div>Question</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number" id="streak">0</div>
+                <div>Streak</div>
+            </div>
+        </div>
+
+        <div id="game-area">
+            <div class="question-card" id="question-card">
+                <div class="question" id="question-text"></div>
+                <div class="options" id="options"></div>
+                <div class="buttons">
+                    <button class="btn" id="submit-btn" onclick="checkAnswer()" disabled>Submit Answer</button>
+                    <button class="btn" id="next-btn" onclick="nextQuestion()" style="display: none;">Next Question</button>
+                </div>
+                <div id="feedback" class="feedback" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                question: "What is the primary difference between supervised and unsupervised learning?",
+                options: [
+                    "Supervised learning uses more data than unsupervised learning",
+                    "Supervised learning uses labeled data to train models, while unsupervised learning finds patterns in unlabeled data",
+                    "Supervised learning is faster than unsupervised learning",
+                    "Supervised learning only works with numerical data"
+                ],
+                correct: 1,
+                explanation: "Supervised learning requires labeled training data (input-output pairs) to learn patterns, while unsupervised learning discovers hidden structures in data without labels."
+            },
+            {
+                question: "Which metric would be most appropriate for evaluating a highly imbalanced binary classification problem?",
+                options: [
+                    "Accuracy",
+                    "F1-Score or AUC-ROC",
+                    "Mean Squared Error",
+                    "R-squared"
+                ],
+                correct: 1,
+                explanation: "F1-Score balances precision and recall, while AUC-ROC evaluates performance across all thresholds. Accuracy can be misleading with imbalanced data."
+            },
+            {
+                question: "What does it mean when a model has high bias and low variance?",
+                options: [
+                    "The model is overfitting to the training data",
+                    "The model is underfitting and too simple to capture underlying patterns",
+                    "The model is perfectly balanced",
+                    "The model has high accuracy"
+                ],
+                correct: 1,
+                explanation: "High bias, low variance indicates underfitting - the model is too simple and consistently makes similar errors across different datasets."
+            },
+            {
+                question: "In SQL, what's the difference between INNER JOIN and LEFT JOIN?",
+                options: [
+                    "INNER JOIN is faster than LEFT JOIN",
+                    "LEFT JOIN returns all records from the left table plus matching records from the right table, while INNER JOIN only returns matching records from both tables",
+                    "There's no difference, they're synonyms",
+                    "LEFT JOIN can only be used with two tables"
+                ],
+                correct: 1,
+                explanation: "LEFT JOIN preserves all rows from the left table even if there's no match in the right table (filling with NULLs), while INNER JOIN only returns rows that have matches in both tables."
+            },
+            {
+                question: "What is the Central Limit Theorem and why is it important in data science?",
+                options: [
+                    "It states that all data follows a normal distribution",
+                    "It explains that sample means approach a normal distribution as sample size increases, enabling statistical inference",
+                    "It proves that correlation implies causation",
+                    "It defines the relationship between mean and median"
+                ],
+                correct: 1,
+                explanation: "The CLT states that sample means approach normality regardless of the original distribution's shape, which is fundamental for hypothesis testing and confidence intervals."
+            },
+            {
+                question: "What is the curse of dimensionality?",
+                options: [
+                    "Having too few features in your dataset",
+                    "The phenomenon where algorithms become less effective as the number of dimensions (features) increases",
+                    "Using categorical variables in machine learning",
+                    "Having missing values in your data"
+                ],
+                correct: 1,
+                explanation: "As dimensions increase, data becomes sparse and distances between points become similar, making many algorithms less effective. This is why feature selection and dimensionality reduction are important."
+            },
+            {
+                question: "What's the key difference between bagging and boosting ensemble methods?",
+                options: [
+                    "Bagging uses decision trees, boosting uses neural networks",
+                    "Bagging trains models in parallel and averages results, while boosting trains models sequentially, each learning from previous errors",
+                    "Bagging is supervised, boosting is unsupervised",
+                    "There's no difference between them"
+                ],
+                correct: 1,
+                explanation: "Bagging (like Random Forest) trains models independently in parallel, while boosting (like XGBoost) trains models sequentially where each model tries to correct the errors of previous models."
+            },
+            {
+                question: "When would you use a t-test vs. a chi-square test?",
+                options: [
+                    "t-test for comparing means of continuous variables, chi-square for testing independence of categorical variables",
+                    "They can be used interchangeably",
+                    "t-test is for large samples, chi-square for small samples",
+                    "t-test is for regression, chi-square for classification"
+                ],
+                correct: 0,
+                explanation: "t-tests compare means between groups (continuous data), while chi-square tests examine relationships between categorical variables or goodness of fit."
+            },
+            {
+                question: "What is regularization in machine learning and why is it used?",
+                options: [
+                    "A method to increase model complexity",
+                    "A technique to prevent overfitting by adding penalty terms to the loss function",
+                    "A way to clean messy data",
+                    "A method to speed up training"
+                ],
+                correct: 1,
+                explanation: "Regularization (L1/L2) adds penalty terms to prevent overfitting by discouraging overly complex models. L1 can perform feature selection, L2 shrinks coefficients toward zero."
+            },
+            {
+                question: "What's the difference between Type I and Type II errors?",
+                options: [
+                    "Type I is accuracy error, Type II is precision error",
+                    "Type I is false positive (rejecting true null hypothesis), Type II is false negative (accepting false null hypothesis)",
+                    "Type I happens with small samples, Type II with large samples",
+                    "They're the same thing with different names"
+                ],
+                correct: 1,
+                explanation: "Type I error (α) is incorrectly rejecting a true null hypothesis (false positive). Type II error (β) is failing to reject a false null hypothesis (false negative)."
+            }
+        ];
+
+        let currentQuestion = 0;
+        let score = 0;
+        let streak = 0;
+        let selectedOption = null;
+        let gameEnded = false;
+
+        function loadQuestion() {
+            if (currentQuestion >= questions.length) {
+                endGame();
+                return;
+            }
+
+            const q = questions[currentQuestion];
+            document.getElementById('question-text').textContent = q.question;
+            document.getElementById('question-num').textContent = currentQuestion + 1;
+            
+            const optionsContainer = document.getElementById('options');
+            optionsContainer.innerHTML = '';
+            
+            q.options.forEach((option, index) => {
+                const optionElement = document.createElement('div');
+                optionElement.className = 'option';
+                optionElement.textContent = option;
+                optionElement.onclick = () => selectOption(index);
+                optionsContainer.appendChild(optionElement);
+            });
+
+            selectedOption = null;
+            document.getElementById('submit-btn').disabled = true;
+            document.getElementById('submit-btn').style.display = 'block';
+            document.getElementById('next-btn').style.display = 'none';
+            document.getElementById('feedback').style.display = 'none';
+        }
+
+        function selectOption(index) {
+            if (gameEnded) return;
+            
+            selectedOption = index;
+            const options = document.querySelectorAll('.option');
+            options.forEach((opt, i) => {
+                opt.classList.remove('selected');
+                if (i === index) opt.classList.add('selected');
+            });
+            document.getElementById('submit-btn').disabled = false;
+        }
+
+        function checkAnswer() {
+            if (selectedOption === null || gameEnded) return;
+
+            const q = questions[currentQuestion];
+            const options = document.querySelectorAll('.option');
+            const feedback = document.getElementById('feedback');
+            
+            options.forEach((opt, i) => {
+                if (i === q.correct) {
+                    opt.classList.add('correct');
+                } else if (i === selectedOption && i !== q.correct) {
+                    opt.classList.add('incorrect');
+                }
+            });
+
+            if (selectedOption === q.correct) {
+                score += 10;
+                streak++;
+                feedback.className = 'feedback correct';
+                feedback.innerHTML = `<strong>Correct! 🎉</strong><br>${q.explanation}`;
+                document.querySelector('.game-container').classList.add('pulse');
+                setTimeout(() => document.querySelector('.game-container').classList.remove('pulse'), 500);
+            } else {
+                streak = 0;
+                feedback.className = 'feedback incorrect';
+                feedback.innerHTML = `<strong>Incorrect 😔</strong><br>${q.explanation}`;
+            }
+
+            document.getElementById('score').textContent = score;
+            document.getElementById('streak').textContent = streak;
+            feedback.style.display = 'block';
+            
+            document.getElementById('submit-btn').style.display = 'none';
+            document.getElementById('next-btn').style.display = 'block';
+        }
+
+        function nextQuestion() {
+            currentQuestion++;
+            loadQuestion();
+        }
+
+        function endGame() {
+            gameEnded = true;
+            const percentage = Math.round((score / (questions.length * 10)) * 100);
+            let performance, celebration;
+
+            if (percentage >= 90) {
+                performance = "Outstanding! You're ready for any data science interview! 🚀";
+                celebration = "🏆🎊🎉";
+            } else if (percentage >= 70) {
+                performance = "Great job! You have a solid foundation. Review the missed concepts! 👍";
+                celebration = "🎉👏";
+            } else if (percentage >= 50) {
+                performance = "Good effort! Keep studying - you're on the right track! 📚";
+                celebration = "💪📈";
+            } else {
+                performance = "Keep learning! Practice these concepts and you'll improve! 🌱";
+                celebration = "🔄📖";
+            }
+
+            document.getElementById('game-area').innerHTML = `
+                <div class="game-over">
+                    <div class="celebration">${celebration}</div>
+                    <h2>Game Complete!</h2>
+                    <div class="final-score">${score}/${questions.length * 10}</div>
+                    <div class="performance">${performance}</div>
+                    <div style="margin-bottom: 20px;">You answered ${score/10} out of ${questions.length} questions correctly (${percentage}%)</div>
+                    <button class="btn" onclick="location.reload()">Play Again</button>
+                </div>
+            `;
+        }
+
+        // Initialize game
+        loadQuestion();
+    </script>
+</body>
+</html>
